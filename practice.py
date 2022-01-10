@@ -127,8 +127,8 @@ class CustomDataset(Dataset):
                 boxes.append([x_min, y_min, x_max, y_max])
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
 
-            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
-            iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)
+            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])    # what does it mean?
+            iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)             # too
 
             label = [self.label_map[label] for label in self.labels[i]]
 
@@ -148,3 +148,11 @@ class CustomDataset(Dataset):
         if self.mode == 'test':
             target["file_name"] = file_name
         return img, target
+    
+    
+    
+    
+    
+test = CustomDataset(train_json_list)
+print(test.points)
+
