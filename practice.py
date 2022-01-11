@@ -149,10 +149,16 @@ class CustomDataset(Dataset):
             target["file_name"] = file_name
         return img, target
     
-    
-    
-    
-    
-test = CustomDataset(train_json_list)
-print(test.points)
+def collate_fn(batch):
+    return tuple(zip(*batch))
 
+
+train_dataset = CustomDataset(train_json_list, mode='train')
+
+torch.manual_seed(1)
+indices = torch.randperm(len(train_dataset)).tolist()
+train_dataset = torch.utils.data.Subset(train_dataset, indices)
+
+train_data_loader = torch.utils.data.DataLoader(
+    train_dataset, batch_size=8, shuffle=True, num_workers=16,
+    collate_fn=collate_fn )
