@@ -25,23 +25,29 @@ from collections import defaultdict, deque
 
 
 
-
+# glob을 사용해서 경로안에 있는 모든 파일을 sorted로 정렬해줌 
+# train_files에 뭐가 있는지 궁금하면 print(train_files)를 작성해서 볼 수 있음.
+# 보면 json file이 순서대로 정렬된것을 볼 수 있음.
 train_files = sorted(glob('../Datasets/train/*'))
 test_files = sorted(glob('../Datasets/test/*'))
 
 
 
+# for문을 사용해서 train_files에서 json data를 가져옴.
+# json data를 train_json_list라는 리스트에 넣어줌. 
+# tqdm은 내 코드가 얼마나 진행되었는지 진행상황을 보여줌 
 train_json_list = []
-for file in tqdm(train_files[:100]):
+for file in tqdm(train_files):
     with open(file, "r") as json_file:
         train_json_list.append(json.load(json_file))
 
 test_json_list = []
-for file in tqdm(test_files[:100]):
+for file in tqdm(test_files):
     with open(file, "r") as json_file:
         test_json_list.append(json.load(json_file))
 
-
+# data를 보면 shape에서 4가지의 label이 있다. 
+# 아래 코드는 각각 label이 몇개가 있는지 보여준다 -> ex) 01_ulcer찍힌 data(사진)이 몇개가 있는지 count해줌.
 label_count = {}
 for data in train_json_list:
     for shape in data['shapes']:
@@ -53,6 +59,8 @@ for data in train_json_list:
 
 print(label_count)
 
+
+# 아래 코드는 data를 활용해 opencv로 이미지 
 '''
 plt.figure(figsize=(25,30))
 for i in range(5):
@@ -186,6 +194,27 @@ def get_instance_segmentation_model(num_classes):
                                                        num_classes)
 
     return model
+
+
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+# class 4 + background 1 = 5
+num_classes = 5
+
+# get the model using our helper function
+model = get_instance_segmentation_model(num_classes)
+# move model to the right device
+model.to(device)
+
+# construct an optimizer
+params = [p for p in model.parameters() if p.requires_grad]
+optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, weight_decay=0.0005)
+
+# and a learning rate scheduler which decreases the learning rate by
+# 10x every 3 epochs
+lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+
+
 
 
 
